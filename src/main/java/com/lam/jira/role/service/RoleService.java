@@ -29,7 +29,7 @@ public interface RoleService {
 @Transactional
 class RoleServiceImpl implements RoleService {
 
-    private final RoleRepository roleRepository;
+    private RoleRepository roleRepository;
 
     public RoleServiceImpl(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;

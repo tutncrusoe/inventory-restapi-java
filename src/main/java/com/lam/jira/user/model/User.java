@@ -54,10 +54,11 @@ public class User extends BaseEntity {
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = RoleEntity.Role.TABLE_NAME,
+            name = UserEntity.User.USER_ROLE_TABLE_NAME,
             joinColumns = @JoinColumn(name = UserEntity.User.USER_ID),
             inverseJoinColumns = @JoinColumn(name = UserEntity.User.ROLE_ID)
     )
+
     private Set<Role> roles;
 
     public void addRole(Role role) {

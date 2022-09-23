@@ -11,13 +11,15 @@
 	<groupId>com.lam</groupId>
 	<artifactId>jira</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>jira</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
+		<start-class>com.lam.jira.JiraApplication</start-class>
 		<java.version>11</java.version>
 		<springdoc.api.version>1.6.9</springdoc.api.version>
 		<mapstruct.version>1.4.2.Final</mapstruct.version>
+		<lombok.version>1.18.22</lombok.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -41,7 +43,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>

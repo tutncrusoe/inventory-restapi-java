@@ -7,6 +7,9 @@ public class UserEntity {
     @UtilityClass
     public class User {
         public static final String TABLE_NAME = "G_USER";
+
+        public static final String USER_ROLE_TABLE_NAME = "G_USER_ROLE";
+
         public static final String EMAIL = "G_EMAIL";
         public static final String PASSWORD = "G_PASSWORD";
 
