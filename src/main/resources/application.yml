@@ -1,0 +1,34 @@
+server:
+  port: 8080
+
+spring:
+  security:
+    user:
+      name: admin
+      password: password
+  datasource:
+    url: jdbc:postgresql://localhost:5432/jira_postgres
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+    show-sql: true
+  flyway:
+    enabled: false
+    driver-class-name: org.postgresql.Driver
+
+jira:
+  app:
+    jwtSecret: lamCustomSecretKeyForJiraAppABCDXYZBLABLABLA
+    jwtExpirationMs: 86400000
+
+springdoc:
+  swagger-ui:
+    path: swagger-ui.html
+    operationsSorter: method
+
+image:
+  get:
+    path: /api/file
