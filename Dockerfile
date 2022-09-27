@@ -5,7 +5,7 @@ FROM openjdk:11-slim as build
 MAINTAINER nqlam.com
 
 # Add the application's jar to the container
-COPY target/jira-0.0.1-SNAPSHOT.jar jira-0.0.1-SNAPSHOT.jar
+COPY target/inventory-0.0.1-SNAPSHOT.jar inventory-0.0.1-SNAPSHOT.jar
 
 #execute the application
-ENTRYPOINT ["java","-jar","/jira-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","/inventory-0.0.1-SNAPSHOT.jar"]
