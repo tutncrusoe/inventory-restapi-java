@@ -1,79 +1,59 @@
 package com.group.inventory.common.service;
 
-import com.group.inventory.common.dto.BaseMapper;
 import com.group.inventory.common.model.BaseEntity;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public interface GenericService<T extends BaseEntity, D, I> {
+    JpaRepository<T, I> getRepository(); // Factory method
+    ModelMapper getModelMapper();
 
-    // 1. Attributes
-    JpaRepository<T, I> getRepository();
-
-    BaseMapper<T, D> getMapper();
-
-    // 2. FindAll T
     default List<T> findAll() {
         return getRepository().findAll();
     }
 
     default List<T> findAll(Pageable pageable) {
-        return getRepository().findAll(pageable)
-                .stream()
-                .toList();
+        return getRepository().findAll(pageable).stream().collect(Collectors.toList());
     }
 
-    // 3. FindAll D
-    default List<D> findAllDTO() {
-        return getRepository().findAll()
-                .stream()
-                .map(getMapper()::mapToDTO)
-                .toList();
-    }
-
-    default List<D> findAllDTO(Pageable pageable) {
-        return getRepository().findAll(pageable)
-                .stream()
-                .map(getMapper()::mapToDTO)
-                .toList();
-    }
-
-    // 4. FindBy
-    default D findById(I id) {
-        Optional<T> entityOpt = getRepository().findById(id);
-
-        if (entityOpt.isEmpty()) {
-            return null;
-        }
-
-        return getMapper().mapToDTO(entityOpt.get());
-    }
-
-    default List<T> findByIds(List<I> ids) {
+    default List<T> findAllIds(List<I> ids) {
         return getRepository().findAllById(ids);
     }
 
-    // 5. save
-    default D save(D dto) {
-        T entity = getMapper().mapToEntity(dto);
-        T newEntity = getRepository().save(entity);
-        return getMapper().mapToDTO(newEntity);
+    default Optional<T> findById(I id) {
+        return getRepository().findById(id);
     }
 
-    // 6. update
-    default D update(D dto, I id) {
-        T entity = getMapper().mapToEntity(dto);
-        T newEntity = getRepository().save(entity);
-        return getMapper().mapToDTO(newEntity);
+    default List<D> findAllDTO(Class<D> clazz) {
+        return getRepository().findAll()
+                .stream()
+                .map(entity -> getModelMapper().map(entity, clazz))
+                .collect(Collectors.toList());
     }
 
-    // 7. delete
+    default List<D> findAllDTO(Pageable pageable, Class<D> clazz) {
+        return getRepository().findAll(pageable)
+                .stream()
+                .map(entity -> getModelMapper().map(entity, clazz))
+                .collect(Collectors.toList());
+    }
+
+    default D save(D dto, Class<T> clazz, Class<D> dtoClazz) {
+        T model = getModelMapper().map(dto, clazz);
+        T savedModel = getRepository().save(model);
+        return getModelMapper().map(savedModel, dtoClazz);
+    }
+
     default void deleteById(I id) {
         getRepository().deleteById(id);
     }
 
-
+    default T update(T entity, I id) {
+        return getRepository().save(entity);
+    }
 }
