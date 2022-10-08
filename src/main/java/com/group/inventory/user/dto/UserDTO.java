@@ -6,9 +6,7 @@ import com.group.inventory.role.dto.RoleDTO;
 import com.group.inventory.user.model.UserStatus;
 import com.group.inventory.user.validation.annotation.UniqueUsername;
 import com.group.inventory.user.validation.annotation.UniqueEmail;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,19 +14,22 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDTO {
+
     private UUID id;
 
     @UniqueUsername
-    private long username;
+    private long name;
 
-    private String displayName;
+//    private String displayName;
 
-    @JsonIgnore
-    private String password;
-
-    @UniqueEmail
+//    @UniqueEmail
     private String email;
+
+//    @JsonIgnore
+    private String password;
 
     private String avatar;
 
@@ -36,5 +37,5 @@ public class UserDTO {
 
     private DepartmentDTO departmentDTO;
 
-    private List<RoleDTO> roles;
+//    private List<RoleDTO> roles;
 }

@@ -1,19 +1,16 @@
 package com.group.inventory.user.boundary;
 
 import com.group.inventory.payload.response.MessageResponse;
-import com.group.inventory.role.dto.RoleDTO;
-import com.group.inventory.role.repository.RoleRepository;
 import com.group.inventory.user.dto.RequestUserDTO;
 import com.group.inventory.user.dto.UserDTO;
 import com.group.inventory.user.service.ImageService;
 import com.group.inventory.user.service.UserService;
 import com.group.inventory.common.util.ResponseHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,13 +19,16 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/user")
-public class UserBoundary {
+public class UserRestResource {
+
+    // 1. Attributes
     @Autowired
     private UserService userService;
 
     @Autowired
     private ImageService imageService;
 
+    // 2. FindAll
     @GetMapping
     public Object getAllUser(HttpServletRequest request) {
         return ResponseHelper.getResponse(userService.findAllUser(request), HttpStatus.OK);
@@ -58,7 +58,7 @@ public class UserBoundary {
     )
     public Object signUp(@Valid @RequestBody RequestUserDTO requestUserDTO) {
         MultipartFile file = requestUserDTO.getFile();
-        if (!file.isEmpty()){
+        if (!file.isEmpty()) {
             String filecode = imageService.save(file);
             requestUserDTO.setAvatar(filecode);
         }
@@ -67,11 +67,19 @@ public class UserBoundary {
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
+    // 3. Save
+    @PostMapping
+    public Object saveUserDTO(@RequestBody @Valid UserDTO userDTO) {
+        return ResponseHelper.getResponse(userService.save(userDTO), HttpStatus.CREATED);
+    }
+
+    // 4. Update
     @PutMapping("/{user-id}")
     public Object updateUser(@PathVariable("user-id") String id, @Valid @RequestBody UserDTO userDTO) {
         return ResponseHelper.getResponse(userService.update(id, userDTO), HttpStatus.OK);
     }
 
+    // 5. Delete
     @DeleteMapping
     public Object deleteUser(@RequestParam("id") String id) {
         userService.delete(id);

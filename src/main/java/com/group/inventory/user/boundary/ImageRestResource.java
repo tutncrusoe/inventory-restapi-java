@@ -1,8 +1,6 @@
 package com.group.inventory.user.boundary;
 
 import com.group.inventory.common.util.ResponseHelper;
-import com.group.inventory.payload.response.MessageResponse;
-import com.group.inventory.payload.response.UploadImageResponse;
 import com.group.inventory.user.dto.ImageDTO;
 import com.group.inventory.user.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/image")
-public class ImageBoundary {
+public class ImageRestResource {
 
     @Autowired
     private ImageService imageService;

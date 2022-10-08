@@ -17,6 +17,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -26,6 +27,7 @@ import java.util.UUID;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public class BaseEntity implements Serializable {
+
     @Id
     @Type(type = "uuid-char")
     @GeneratedValue
@@ -36,44 +38,39 @@ public class BaseEntity implements Serializable {
     @Column(name = Columns.VERSION)
     protected int version;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateTimeUtils.DATETIME_FORMAT)
-    @DateTimeFormat(pattern = DateTimeUtils.DATETIME_FORMAT)
-    @CreatedDate
-    @Column(name = Columns.CREATED_AT)
-    protected String createdAt;
-
     @CreatedBy
     @Column(name = Columns.CREATED_BY)
     protected String createdBy;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateTimeUtils.DATETIME_FORMAT)
     @DateTimeFormat(pattern = DateTimeUtils.DATETIME_FORMAT)
-    @LastModifiedDate
-    @Column(name = Columns.LAST_MODIFIED_AT)
-    protected String lastModifiedAt;
+    @CreatedDate
+    @Column(name = Columns.CREATED_AT)
+    protected LocalDateTime createdAt;
 
     @LastModifiedBy
     @Column(name = Columns.LAST_MODIFIED_BY)
     protected String lastModifiedBy;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateTimeUtils.DATETIME_FORMAT)
+    @DateTimeFormat(pattern = DateTimeUtils.DATETIME_FORMAT)
+    @LastModifiedDate
+    @Column(name = Columns.LAST_MODIFIED_AT)
+    protected LocalDateTime lastModifiedAt;
 
     @Override
     public boolean equals(Object obj) {
         return this.id.equals(((BaseEntity) obj).id);
     }
 
+    // inner class
     @UtilityClass
     static class Columns {
         static final String ID = "ID";
-
         static final String VERSION = "VERSION";
-
         static final String CREATED_BY = "CREATED_BY";
-
         static final String CREATED_AT = "CREATED_AT";
-
         static final String LAST_MODIFIED_BY = "LAST_MODIFIED_BY";
-
         static final String LAST_MODIFIED_AT = "LAST_MODIFIED_AT";
-
     }
 }

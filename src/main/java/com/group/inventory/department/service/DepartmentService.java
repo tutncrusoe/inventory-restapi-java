@@ -39,17 +39,17 @@ class DepartmentServiceImpl implements DepartmentService {
         return this.departmentMapper.INSTANCE;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<DepartmentDTO> findAll() {
-        return DepartmentService.super.findAll();
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<DepartmentDTO> findAll() {
+//        return DepartmentService.super.findAll();
+//    }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<DepartmentDTO> findAll(Pageable pageable) {
-        return DepartmentService.super.findAll(pageable);
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<DepartmentDTO> findAll(Pageable pageable) {
+//        return DepartmentService.super.findAll(pageable);
+//    }
 
     @Override
     @Transactional(readOnly = true)

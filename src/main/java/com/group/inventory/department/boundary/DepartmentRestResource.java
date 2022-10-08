@@ -16,10 +16,10 @@ public class DepartmentRestResource {
     @Autowired
     private DepartmentService departmentService;
 
-    @GetMapping
-    public Object findAllDepartments() {
-        return ResponseHelper.getResponse(departmentService.findAll(), HttpStatus.OK);
-    }
+//    @GetMapping
+//    public Object findAllDepartments() {
+//        return ResponseHelper.getResponse(departmentService.findAll(), HttpStatus.OK);
+//    }
 
     @GetMapping("/{role-id}")
     public Object findRoleById(@PathVariable("role-id") String id) {

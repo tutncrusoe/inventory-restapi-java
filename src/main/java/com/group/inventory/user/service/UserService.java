@@ -1,5 +1,7 @@
 package com.group.inventory.user.service;
 
+import com.group.inventory.common.dto.BaseMapper;
+import com.group.inventory.common.service.GenericService;
 import com.group.inventory.department.model.Department;
 import com.group.inventory.department.repository.DepartmentRepository;
 import com.group.inventory.role.model.Role;
@@ -11,6 +13,8 @@ import com.group.inventory.user.dto.UserDTO;
 import com.group.inventory.user.mapper.UserMapper;
 import com.group.inventory.user.model.User;
 import com.group.inventory.user.repository.UserRepository;
+import org.mapstruct.factory.Mappers;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,12 +23,13 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public interface UserService {
+public interface UserService extends GenericService<User, UserDTO, UUID> {
     UserDTO createNewUser(RequestUserDTO dto);
 
     List<UserDTO> findAllUser(HttpServletRequest request);
@@ -47,6 +52,8 @@ public interface UserService {
 
     UserDTO removeDepartment(String userId, String departmentId);
 
+    UserDTO save(UserDTO userDTO);
+
     UserDTO update(String id, UserDTO dto);
 
     void delete(String id);
@@ -55,6 +62,8 @@ public interface UserService {
 @Service
 @Transactional
 class UserServiceImpl implements UserService {
+
+    // 1. Attributes
     private final UserRepository userRepository;
 
     private final RoleRepository roleRepository;
@@ -65,6 +74,9 @@ class UserServiceImpl implements UserService {
 
     private final PasswordEncoder encoder;
 
+    private final UserMapper userMapper;
+
+    // 2. Constructors
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            DepartmentRepository departmentRepository,
@@ -75,7 +87,20 @@ class UserServiceImpl implements UserService {
         this.departmentRepository = departmentRepository;
         this.imageService = imageService;
         this.encoder = encoder;
+        this.userMapper = Mappers.getMapper(UserMapper.class);
     }
+
+    // 3. Methods
+    @Override
+    public JpaRepository<User, UUID> getRepository() {
+        return this.userRepository;
+    }
+
+    @Override
+    public BaseMapper<User, UserDTO> getMapper() {
+        return this.userMapper;
+    }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -86,7 +111,7 @@ class UserServiceImpl implements UserService {
                             UserDTO userDTO;
                             try {
                                 String imageUrl = imageService.generateImgUrl(user.getAvatar(), request);
-                                userDTO = UserMapper.INSTANCE.toUserDTO(user);
+                                userDTO = userMapper.toUserDTO(user);
                                 userDTO.setAvatar(imageUrl);
                             } catch (MalformedURLException e) {
                                 throw new RuntimeException(e);
@@ -105,7 +130,7 @@ class UserServiceImpl implements UserService {
         if (userOpt.isEmpty()) {
             return null;
         }
-        return UserMapper.INSTANCE.toUserDTO(userOpt.get());
+        return userMapper.toUserDTO(userOpt.get());
     }
 
     @Override
@@ -115,7 +140,7 @@ class UserServiceImpl implements UserService {
         if (userOpt.isEmpty()) {
             return null;
         }
-        return UserMapper.INSTANCE.toUserDTO(userOpt.get());
+        return userMapper.toUserDTO(userOpt.get());
     }
 
     @Override
@@ -130,7 +155,7 @@ class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO createNewUser(RequestUserDTO dto) {
-        User user = UserMapper.INSTANCE.mapToEntity(dto);
+        User user = userMapper.mapToEntity(dto);
 
         user.setPassword(encoder.encode(dto.getPassword()));
 
@@ -149,7 +174,7 @@ class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO update(String id, UserDTO dto) {
-        User user = UserMapper.INSTANCE.mapToEntity(dto);
+        User user = userMapper.mapToEntity(dto);
 
         Optional<User> curUserOpt = userRepository.findById(UUID.fromString(id));
 
@@ -159,9 +184,9 @@ class UserServiceImpl implements UserService {
 
         User curUser = curUserOpt.get();
 
-        if (curUser.getId().equals(user.getId())){
+        if (curUser.getId().equals(user.getId())) {
             User newUser = userRepository.save(user);
-            return UserMapper.INSTANCE.toUserDTO(newUser);
+            return userMapper.toUserDTO(newUser);
         }
         return null;
     }
@@ -181,7 +206,7 @@ class UserServiceImpl implements UserService {
 
         User newUser = userRepository.save(user);
 
-        return UserMapper.INSTANCE.toUserDTO(newUser);
+        return userMapper.toUserDTO(newUser);
     }
 
     @Override
@@ -199,10 +224,10 @@ class UserServiceImpl implements UserService {
         if (userOpt.isPresent() && roleOpt.isPresent()) {
             User user = userOpt.get();
             Role role = roleOpt.get();
-            user.addRole(role);
+//            user.addRole(role);
 
             User modifiedUser = userRepository.save(user);
-            return UserMapper.INSTANCE.toUserDTO(modifiedUser);
+            return userMapper.toUserDTO(modifiedUser);
         }
 
         return null;
@@ -223,10 +248,10 @@ class UserServiceImpl implements UserService {
         if (userOpt.isPresent() && roleOpt.isPresent()) {
             User user = userOpt.get();
             Role role = roleOpt.get();
-            user.removeRole(role);
+//            user.removeRole(role);
 
             User modifiedUser = userRepository.save(user);
-            return UserMapper.INSTANCE.toUserDTO(modifiedUser);
+            return userMapper.toUserDTO(modifiedUser);
         }
 
         return null;
@@ -247,10 +272,10 @@ class UserServiceImpl implements UserService {
         if (userOpt.isPresent() && departmentOpt.isPresent()) {
             User user = userOpt.get();
             Department department = departmentOpt.get();
-            user.addDepartment(department);
+//            user.addDepartment(department);
 
             User modifiedUser = userRepository.save(user);
-            return UserMapper.INSTANCE.toUserDTO(modifiedUser);
+            return userMapper.toUserDTO(modifiedUser);
         }
 
         return null;
@@ -271,27 +296,25 @@ class UserServiceImpl implements UserService {
         if (userOpt.isPresent() && departmentOpt.isPresent()) {
             User user = userOpt.get();
             Department department = departmentOpt.get();
-            user.removeDepartment(department);
+//            user.removeDepartment(department);
 
             User modifiedUser = userRepository.save(user);
-            return UserMapper.INSTANCE.toUserDTO(modifiedUser);
+            return userMapper.toUserDTO(modifiedUser);
         }
 
         return null;
     }
 
     @Override
+    public UserDTO save(UserDTO userDTO) {
+        User user = userMapper.mapToEntity(userDTO);
+        User savedUser = userRepository.save(user);
+        return userMapper.mapToDTO(savedUser);
+    }
+
+    @Override
     public List<RoleDTO> getRolesFromUser(UUID uuid) {
-        Optional<User> userOpt = userRepository.findUserWithRolesById(uuid);
-
-        if (userOpt.isEmpty()) {
-            return null;
-        }
-
-        return userOpt.get().getRoles()
-                .stream()
-                .map(RoleMapper.INSTANCE::toRoleDTO)
-                .collect(Collectors.toList());
+        return null;
     }
 
     @Override

@@ -8,6 +8,7 @@ public class UserEntity {
     public class User {
         public static final String TABLE_NAME = "I_USER";
 
+        public static final String NAME = "I_NAME";
         public static final String EMAIL = "I_EMAIL";
         public static final String PASSWORD = "I_PASSWORD";
 

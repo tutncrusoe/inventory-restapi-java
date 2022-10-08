@@ -6,8 +6,10 @@ import com.group.inventory.common.util.ResponseHelper;
 import com.group.inventory.role.dto.RoleDTO;
 import com.group.inventory.role.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,15 +19,23 @@ import java.util.List;
 @RestController
 @RequestMapping("api/roles")
 public class RoleRestResource {
+
     @Autowired
     private RoleService roleService;
 
+    // 1. FindAll
     @GetMapping
     public Object findAllRoles() {
-        List<RoleDTO> roles = roleService.findAll();
+        List<RoleDTO> roles = roleService.findAllDTO();
         return ResponseHelper.getResponse(roles, HttpStatus.OK);
     }
 
+    @GetMapping
+    public Object findAllDTOPaging(@RequestParam("size") int size, @RequestParam("index") int index) {
+        return ResponseHelper.getResponse(roleService.findAllDTO(Pageable.ofSize(size).withPage(index)), HttpStatus.OK);
+    }
+
+    // 2. FindBy
     @GetMapping("/{role-id}")
     public Object findRoleById(@PathVariable("role-id") String id) {
         RoleDTO roleDTO = roleService.findRoleById(id);
@@ -35,21 +45,23 @@ public class RoleRestResource {
         return ResponseHelper.getResponse(roleDTO, HttpStatus.OK);
     }
 
+    // 3. save
     @PostMapping
-    public Object saveRole(@Valid @RequestBody RoleDTO roleDTO) {
-        Role role = roleService.save(roleDTO);
-        return ResponseHelper.getResponse(role, HttpStatus.CREATED);
+    public Object saveRoleDTO(@Valid @RequestBody RoleDTO roleDTO) {
+        return ResponseHelper.getResponse(roleService.save(roleDTO), HttpStatus.CREATED);
     }
 
+    // 4. update
     @PutMapping("/{role-id}")
-    public Object updateRole(@PathVariable("role-id") String id, @Valid @RequestBody RoleDTO roleDTO) {
-        RoleDTO newRoleDTO = roleService.update(roleDTO, id);
-        return ResponseHelper.getResponse(newRoleDTO, HttpStatus.ACCEPTED);
+    public Object updateRoleDTO(@PathVariable("role-id") String id, @Valid @RequestBody RoleDTO roleDTO) {
+        return ResponseHelper.getResponse(roleService.update(roleDTO, id), HttpStatus.ACCEPTED);
     }
 
+    // 4. delete
     @DeleteMapping
     public Object deleteRole(@RequestParam("id") String id) {
         roleService.delete(id);
         return ResponseHelper.getResponse("Role is deleted successfully", HttpStatus.OK);
     }
+
 }
