@@ -20,6 +20,7 @@
 		<springdoc.api.version>1.6.9</springdoc.api.version>
 		<mapstruct.version>1.4.2.Final</mapstruct.version>
 		<lombok.version>1.18.22</lombok.version>
+		<modelmapper.version>3.1.0</modelmapper.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -135,7 +136,6 @@
 		<dependency>
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>
-			<version>3.1.0</version>
 		</dependency>
 	</dependencies>
 
