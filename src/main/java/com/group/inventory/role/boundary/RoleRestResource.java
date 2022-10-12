@@ -32,7 +32,7 @@ public class RoleRestResource {
 
     @GetMapping
     public Object findAllDTOPaging(@RequestParam("size") int size, @RequestParam("index") int index) {
-        return ResponseHelper.getResponse(roleService.findAllDTO(Pageable.ofSize(size).withPage(index)), HttpStatus.OK);
+        return ResponseHelper.getResponse(roleService.findAllDTO(Pageable.ofSize(size).withPage(index), RoleDTO.class), HttpStatus.OK);
     }
 
     // 2. FindBy
