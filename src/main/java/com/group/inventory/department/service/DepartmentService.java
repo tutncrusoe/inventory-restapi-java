@@ -1,12 +1,11 @@
 package com.group.inventory.department.service;
 
-import com.group.inventory.common.dto.BaseMapper;
 import com.group.inventory.common.service.GenericService;
+import com.group.inventory.common.util.BaseMapper;
 import com.group.inventory.department.dto.DepartmentDTO;
-import com.group.inventory.department.mapper.DepartmentMapper;
 import com.group.inventory.department.model.Department;
 import com.group.inventory.department.repository.DepartmentRepository;
-import org.springframework.data.domain.Pageable;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +22,11 @@ class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
 
-    private DepartmentMapper departmentMapper;
+    private final BaseMapper mapper;
 
-    public DepartmentServiceImpl(DepartmentRepository departmentRepository) {
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository, BaseMapper mapper) {
         this.departmentRepository = departmentRepository;
+        this.mapper = mapper;
     }
 
     @Override
@@ -35,31 +35,12 @@ class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public BaseMapper<Department, DepartmentDTO> getMapper() {
-        return this.departmentMapper.INSTANCE;
-    }
-
-//    @Override
-//    @Transactional(readOnly = true)
-//    public List<DepartmentDTO> findAll() {
-//        return DepartmentService.super.findAll();
-//    }
-
-//    @Override
-//    @Transactional(readOnly = true)
-//    public List<DepartmentDTO> findAll(Pageable pageable) {
-//        return DepartmentService.super.findAll(pageable);
-//    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public DepartmentDTO findById(UUID id) {
-        return DepartmentService.super.findById(id);
+    public ModelMapper getModelMapper() {
+        return this.mapper;
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<DepartmentDTO> findAllDTO(Pageable pageable) {
-        return DepartmentService.super.findAllDTO(pageable);
+    public List<Department> findAll() {
+        return DepartmentService.super.findAll();
     }
 }

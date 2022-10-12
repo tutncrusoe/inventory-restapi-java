@@ -1,13 +1,12 @@
 package com.group.inventory.user.boundary;
 
+import com.group.inventory.common.util.ResponseHelper;
 import com.group.inventory.payload.response.MessageResponse;
 import com.group.inventory.user.dto.RequestUserDTO;
 import com.group.inventory.user.dto.UserDTO;
 import com.group.inventory.user.service.ImageService;
 import com.group.inventory.user.service.UserService;
-import com.group.inventory.common.util.ResponseHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +30,7 @@ public class UserRestResource {
     // 2. FindAll
     @GetMapping
     public Object getAllUser(HttpServletRequest request) {
-        return ResponseHelper.getResponse(userService.findAllUser(request), HttpStatus.OK);
+        return ResponseHelper.getResponse(userService.findAllUser(request, UserDTO.class), HttpStatus.OK);
     }
 
     @GetMapping("/{user-id}")

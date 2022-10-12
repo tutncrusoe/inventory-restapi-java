@@ -1,19 +1,17 @@
 package com.group.inventory.user.service;
 
-import com.group.inventory.common.dto.BaseMapper;
 import com.group.inventory.common.service.GenericService;
+import com.group.inventory.common.util.BaseMapper;
 import com.group.inventory.department.model.Department;
 import com.group.inventory.department.repository.DepartmentRepository;
+import com.group.inventory.role.dto.RoleDTO;
 import com.group.inventory.role.model.Role;
 import com.group.inventory.role.repository.RoleRepository;
 import com.group.inventory.user.dto.RequestUserDTO;
-import com.group.inventory.role.dto.RoleDTO;
-import com.group.inventory.role.mapper.RoleMapper;
 import com.group.inventory.user.dto.UserDTO;
-import com.group.inventory.user.mapper.UserMapper;
 import com.group.inventory.user.model.User;
 import com.group.inventory.user.repository.UserRepository;
-import org.mapstruct.factory.Mappers;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,7 +29,7 @@ import java.util.stream.Collectors;
 public interface UserService extends GenericService<User, UserDTO, UUID> {
     UserDTO createNewUser(RequestUserDTO dto);
 
-    List<UserDTO> findAllUser(HttpServletRequest request);
+    List<UserDTO> findAllUser(HttpServletRequest request, Class<UserDTO> dtoClass);
 
     UserDTO findUserById(String id, HttpServletRequest request);
 
@@ -74,20 +71,20 @@ class UserServiceImpl implements UserService {
 
     private final PasswordEncoder encoder;
 
-    private final UserMapper userMapper;
+    private final BaseMapper mapper;
 
     // 2. Constructors
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            DepartmentRepository departmentRepository,
                            ImageService imageService,
-                           PasswordEncoder encoder) {
+                           PasswordEncoder encoder, BaseMapper mapper) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.departmentRepository = departmentRepository;
         this.imageService = imageService;
         this.encoder = encoder;
-        this.userMapper = Mappers.getMapper(UserMapper.class);
+        this.mapper = mapper;
     }
 
     // 3. Methods
@@ -96,22 +93,22 @@ class UserServiceImpl implements UserService {
         return this.userRepository;
     }
 
-    @Override
-    public BaseMapper<User, UserDTO> getMapper() {
-        return this.userMapper;
-    }
 
+    @Override
+    public ModelMapper getModelMapper() {
+        return this.mapper;
+    }
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserDTO> findAllUser(HttpServletRequest request) {
+    public List<UserDTO> findAllUser(HttpServletRequest request, Class<UserDTO> dtoClass) {
         List<User> users = userRepository.findAll();
         return users.stream()
                 .map(user -> {
                             UserDTO userDTO;
                             try {
                                 String imageUrl = imageService.generateImgUrl(user.getAvatar(), request);
-                                userDTO = userMapper.toUserDTO(user);
+                                userDTO = mapper.map(user, dtoClass);
                                 userDTO.setAvatar(imageUrl);
                             } catch (MalformedURLException e) {
                                 throw new RuntimeException(e);
@@ -130,7 +127,7 @@ class UserServiceImpl implements UserService {
         if (userOpt.isEmpty()) {
             return null;
         }
-        return userMapper.toUserDTO(userOpt.get());
+        return mapper.map(userOpt.get(), UserDTO.class);
     }
 
     @Override
@@ -140,7 +137,7 @@ class UserServiceImpl implements UserService {
         if (userOpt.isEmpty()) {
             return null;
         }
-        return userMapper.toUserDTO(userOpt.get());
+        return mapper.map(userOpt.get(), UserDTO.class);
     }
 
     @Override
@@ -155,7 +152,7 @@ class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO createNewUser(RequestUserDTO dto) {
-        User user = userMapper.mapToEntity(dto);
+        User user = mapper.map(dto, User.class);
 
         user.setPassword(encoder.encode(dto.getPassword()));
 
@@ -167,14 +164,12 @@ class UserServiceImpl implements UserService {
             addRole(newUser.getId().toString(), roleId);
         });
 
-        UserDTO userDTO = addDepartment(newUser.getId().toString(), dto.getDepartmentId());
-
-        return userDTO;
+        return addDepartment(newUser.getId().toString(), dto.getDepartmentId());
     }
 
     @Override
     public UserDTO update(String id, UserDTO dto) {
-        User user = userMapper.mapToEntity(dto);
+        User user = mapper.map(dto, User.class);
 
         Optional<User> curUserOpt = userRepository.findById(UUID.fromString(id));
 
@@ -186,7 +181,7 @@ class UserServiceImpl implements UserService {
 
         if (curUser.getId().equals(user.getId())) {
             User newUser = userRepository.save(user);
-            return userMapper.toUserDTO(newUser);
+            return mapper.map(newUser, UserDTO.class);
         }
         return null;
     }
@@ -206,7 +201,7 @@ class UserServiceImpl implements UserService {
 
         User newUser = userRepository.save(user);
 
-        return userMapper.toUserDTO(newUser);
+        return mapper.map(newUser, UserDTO.class);
     }
 
     @Override
@@ -227,7 +222,7 @@ class UserServiceImpl implements UserService {
 //            user.addRole(role);
 
             User modifiedUser = userRepository.save(user);
-            return userMapper.toUserDTO(modifiedUser);
+            return mapper.map(modifiedUser, UserDTO.class);
         }
 
         return null;
@@ -251,7 +246,7 @@ class UserServiceImpl implements UserService {
 //            user.removeRole(role);
 
             User modifiedUser = userRepository.save(user);
-            return userMapper.toUserDTO(modifiedUser);
+            return mapper.map(modifiedUser, UserDTO.class);
         }
 
         return null;
@@ -275,7 +270,7 @@ class UserServiceImpl implements UserService {
 //            user.addDepartment(department);
 
             User modifiedUser = userRepository.save(user);
-            return userMapper.toUserDTO(modifiedUser);
+            return mapper.map(modifiedUser, UserDTO.class);
         }
 
         return null;
@@ -299,7 +294,7 @@ class UserServiceImpl implements UserService {
 //            user.removeDepartment(department);
 
             User modifiedUser = userRepository.save(user);
-            return userMapper.toUserDTO(modifiedUser);
+            return mapper.map(modifiedUser, UserDTO.class);
         }
 
         return null;
@@ -307,9 +302,9 @@ class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO save(UserDTO userDTO) {
-        User user = userMapper.mapToEntity(userDTO);
+        User user = mapper.map(userDTO, User.class);
         User savedUser = userRepository.save(user);
-        return userMapper.mapToDTO(savedUser);
+        return mapper.map(savedUser, UserDTO.class);
     }
 
     @Override

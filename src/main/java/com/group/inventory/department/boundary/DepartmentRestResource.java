@@ -2,6 +2,7 @@ package com.group.inventory.department.boundary;
 
 import com.group.inventory.common.util.ResponseHelper;
 import com.group.inventory.department.dto.DepartmentDTO;
+import com.group.inventory.department.model.Department;
 import com.group.inventory.department.service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,32 +17,39 @@ public class DepartmentRestResource {
     @Autowired
     private DepartmentService departmentService;
 
+    // START REMOVE BY QuocHao - 12-10-2022
 //    @GetMapping
 //    public Object findAllDepartments() {
 //        return ResponseHelper.getResponse(departmentService.findAll(), HttpStatus.OK);
 //    }
+    // END REMOVE BY QuocHao - 12-10-2022
 
-    @GetMapping("/{role-id}")
-    public Object findRoleById(@PathVariable("role-id") String id) {
-        DepartmentDTO departmentDTO = departmentService.findById(UUID.fromString(id));
-        if (departmentDTO == null) {
-            return ResponseHelper.getErrorResponse("Role is not existed.", HttpStatus.BAD_REQUEST);
-        }
-        return ResponseHelper.getResponse(departmentDTO, HttpStatus.OK);
-    }
+    // START REMOVE BY QuocHao - 12-10-2022
+//    @GetMapping("/{role-id}")
+//    public Object findRoleById(@PathVariable("role-id") String id) {
+//        DepartmentDTO departmentDTO = departmentService.findById(UUID.fromString(id));
+//        if (departmentDTO == null) {
+//            return ResponseHelper.getErrorResponse("Role is not existed.", HttpStatus.BAD_REQUEST);
+//        }
+//        return ResponseHelper.getResponse(departmentDTO, HttpStatus.OK);
+//    }
+    // END REMOVE BY QuocHao - 12-10-2022
 
     @PostMapping
     public Object saveRole(@Valid @RequestBody DepartmentDTO dto) {
-        return ResponseHelper.getResponse(departmentService.save(dto), HttpStatus.CREATED);
+        return ResponseHelper.getResponse(departmentService.save(dto, Department.class, DepartmentDTO.class), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{role-id}")
-    public Object updateRole(@PathVariable("role-id") String id, @Valid @RequestBody DepartmentDTO departmentDTO) {
-        return ResponseHelper.getResponse(
-                departmentService.update(departmentDTO, UUID.fromString(id)),
-                HttpStatus.ACCEPTED
-        );
-    }
+    // START REMOVE BY QuocHao - 12-10-2022
+//    @PutMapping("/{role-id}")
+//    public Object updateRole(@PathVariable("role-id") String id, @Valid @RequestBody DepartmentDTO departmentDTO) {
+//        return ResponseHelper.getResponse(
+//                departmentService.update(departmentDTO, UUID.fromString(id)),
+//                HttpStatus.ACCEPTED
+//        );
+//    }
+    // END REMOVE BY QuocHao - 12-10-2022
+
 
     @DeleteMapping
     public Object deleteRole(@RequestParam("id") String id) {
