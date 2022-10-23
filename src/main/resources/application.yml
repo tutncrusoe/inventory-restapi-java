@@ -4,15 +4,17 @@ server:
 spring:
   security:
     user:
-      name: admin
+      name: superadmin@gmail.com
       password: password
+      role: SUPER_ADMIN
   datasource:
     url: jdbc:mysql://localhost:3306/inventory_app
     username: root
     password: 1234
+    initialization-mode: always
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
       globally_quoted_identifiers: true
     generate-ddl: true
     show-sql: true
@@ -34,4 +36,4 @@ springdoc:
 
 image:
   get:
-    path: /api/file
+    path: /api/v1/image

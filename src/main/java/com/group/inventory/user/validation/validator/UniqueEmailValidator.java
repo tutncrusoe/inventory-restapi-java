@@ -1,11 +1,13 @@
 package com.group.inventory.user.validation.validator;
 
+import com.group.inventory.user.model.User;
 import com.group.inventory.user.validation.annotation.UniqueEmail;
 import com.group.inventory.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.util.Optional;
 
 public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, String> {
     private String message;
@@ -24,13 +26,16 @@ public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, St
 
     @Override
     public boolean isValid(String email, ConstraintValidatorContext constraintValidatorContext) {
-        boolean existedEmail = userRepository.existsByEmail(email);
-        if (existedEmail) {
-            constraintValidatorContext.buildConstraintViolationWithTemplate(message)
-                    .addConstraintViolation()
-                    .disableDefaultConstraintViolation();
-            return false;
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            return true;
         }
-        return true;
+
+        constraintValidatorContext.buildConstraintViolationWithTemplate(message)
+                .addConstraintViolation()
+                .disableDefaultConstraintViolation();
+
+        return false;
     }
 }

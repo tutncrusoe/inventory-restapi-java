@@ -1,6 +1,5 @@
 package com.group.inventory.security.jwt;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,29 +17,44 @@ import java.io.IOException;
 @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
-    @Autowired
-    private UserDetailsService service;
+    private final UserDetailsService service;
+
+    public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsService service) {
+        this.jwtUtils = jwtUtils;
+        this.service = service;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         String token = jwtUtils.getToken(request);
 
-        if (jwtUtils.validate(token)) {
-            // get credential and set security context
-            String username = jwtUtils.getUsername(token);
-            UserDetails userDetails = service.loadUserByUsername(username);
-            Authentication auth
-                    = new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities());
+        String path = request.getServletPath();
 
-            SecurityContextHolder.getContext().setAuthentication(auth);
+        if (!(path.startsWith("/api/v1/auth/login")
+                || path.startsWith("/api/v1/users/sign-up")
+                || path.startsWith("/swagger-ui/index.html")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/v3/api-docs/swagger-config"))) {
+            if (jwtUtils.validateJwt(token)) {
+                // get credential and set security context
+                String email = jwtUtils.getEmail(token);
 
-            // authorization
+                UserDetails userDetails = service.loadUserByUsername(email);
 
+                Authentication auth
+                        = new UsernamePasswordAuthenticationToken(
+                        userDetails.getUsername(),
+                        null,
+                        userDetails.getAuthorities());
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
         }
+
         filterChain.doFilter(request, response);
     }
 }

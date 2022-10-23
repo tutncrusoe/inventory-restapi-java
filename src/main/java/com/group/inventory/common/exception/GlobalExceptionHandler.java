@@ -6,6 +6,9 @@ import com.group.inventory.common.util.ResponseHelper;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,7 +28,6 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
-
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -63,6 +65,56 @@ public class GlobalExceptionHandler {
             IndexOutOfBoundsException indexOutOfBoundsException) {
         return ResponseHelper.getErrorResponse(
                 ErrorHelper.getError(indexOutOfBoundsException),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(InventoryBusinessException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<BaseResponse> handleInventoryBusinessException(
+            InventoryBusinessException inventoryBusinessException) {
+        return ResponseHelper.getErrorResponse(
+                ErrorHelper.getError(inventoryBusinessException),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<BaseResponse> handleIllegalArgumentException(
+            IllegalArgumentException illegalArgumentException) {
+        return ResponseHelper.getErrorResponse(
+                ErrorHelper.getError(illegalArgumentException),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<BaseResponse> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException httpMessageNotReadableException) {
+        return ResponseHelper.getErrorResponse(
+                ErrorHelper.getError(httpMessageNotReadableException),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<BaseResponse> handleHttpRequestMethodNotSupportedException(
+            HttpRequestMethodNotSupportedException httpRequestMethodNotSupportedException) {
+        return ResponseHelper.getErrorResponse(
+                ErrorHelper.getError(httpRequestMethodNotSupportedException),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<BaseResponse> handleHttpMediaTypeNotSupportedException(
+            HttpMediaTypeNotSupportedException httpMediaTypeNotSupportedException) {
+        return ResponseHelper.getErrorResponse(
+                ErrorHelper.getError(httpMediaTypeNotSupportedException),
                 HttpStatus.BAD_REQUEST
         );
     }

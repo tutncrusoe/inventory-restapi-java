@@ -1,26 +1,24 @@
 package com.group.inventory.role.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import com.group.inventory.role.model.ERole;
+import lombok.*;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RoleDTO {
     private UUID id;
 
-    @NotNull
-    private String name;
+    @Enumerated(EnumType.STRING)
+    private ERole name;
 
-    @Size(min = 5, max = 100, message = "Role Code must be 5 characters.")
-    private String code;
-
-    @NotBlank(message = "Description must be not blank.")
+    @NotBlank(message = "{desc.blank}")
     private String description;
 }

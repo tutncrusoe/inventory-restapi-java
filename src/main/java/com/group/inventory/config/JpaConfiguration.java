@@ -1,14 +1,15 @@
 package com.group.inventory.config;
 
+import com.group.inventory.security.dto.UserDetailsImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
+import java.util.Objects;
 import java.util.Optional;
 
 @Configuration
@@ -25,17 +26,12 @@ public class JpaConfiguration {
         public Optional<String> getCurrentAuditor() {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-            if (auth == null) {
-                return Optional.ofNullable("");
+            if (Objects.equals(auth.getPrincipal(), "anonymousUser")) {
+                return Optional.ofNullable("Anonymous");
             }
 
-            if (auth.getPrincipal() instanceof Principal) {
-                String authPrincipal = (String) auth.getPrincipal();
-                return Optional.ofNullable(authPrincipal);
-            }
-
-            UserDetails currentAuditor = (UserDetails) auth.getPrincipal();
-            return Optional.ofNullable(currentAuditor.getUsername());
+            String authPrincipal = (String) auth.getPrincipal();
+            return Optional.ofNullable(authPrincipal);
         }
     }
 }

@@ -1,7 +1,9 @@
 package com.group.inventory.role.service;
 
+import com.group.inventory.common.exception.InventoryBusinessException;
 import com.group.inventory.common.service.GenericService;
 import com.group.inventory.common.util.BaseMapper;
+import com.group.inventory.role.model.ERole;
 import com.group.inventory.role.repository.RoleRepository;
 import com.group.inventory.role.dto.RoleDTO;
 import com.group.inventory.role.model.Role;
@@ -10,42 +12,28 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public interface RoleService extends GenericService<Role, RoleDTO, UUID> {
-
-    // method
-    List<RoleDTO> findAllDTO();
-
-    RoleDTO findRoleById(String id);
-
-    RoleDTO save(RoleDTO roleDTO);
-
-    RoleDTO update(RoleDTO roleDTO, String id);
-
-    void delete(String id);
+    Role findByName(ERole roleUser);
 }
 
 @Service
 @Transactional
 class RoleServiceImpl implements RoleService {
 
-    // 1. Attributes
+    //    -----------------------       ATTRIBUTES       ----------------------
     private final RoleRepository roleRepository;
 
-    private final BaseMapper roleMapper;
+    private final BaseMapper mapper;
 
-    // 2. Constructors
-    public RoleServiceImpl(RoleRepository roleRepository, BaseMapper roleMapper) {
+    //    -----------------------       CONSTRUCTOR       ----------------------
+    public RoleServiceImpl(RoleRepository roleRepository, BaseMapper mapper) {
         this.roleRepository = roleRepository;
-        this.roleMapper = roleMapper;
+        this.mapper = mapper;
     }
 
-    // 3. Method
+    //    -----------------------       METHODS       ----------------------
     @Override
     public JpaRepository<Role, UUID> getRepository() {
         return this.roleRepository;
@@ -53,63 +41,27 @@ class RoleServiceImpl implements RoleService {
 
     @Override
     public ModelMapper getModelMapper() {
-        return this.roleMapper;
-    }
-
-    // 4. FindAll
-    @Override
-    @Transactional(readOnly = true)
-    public List<RoleDTO> findAllDTO() {
-        return getRepository().findAll()
-                .stream()
-                .map(entity -> getModelMapper().map(entity, RoleDTO.class))
-                .collect(Collectors.toList());
+        return this.mapper;
     }
 
     @Override
-    public RoleDTO findRoleById(String id) {
-        Optional<Role> roleOpt = roleRepository.findById(UUID.fromString(id));
-        if (roleOpt.isEmpty()) {
-            return null;
-        }
-        return roleMapper.map(roleOpt, RoleDTO.class);
+    public Role findByName(ERole roleUser) {
+        return roleRepository.findByName(roleUser)
+                .orElseThrow(() -> new InventoryBusinessException("Role is not existed."));
     }
 
-    // 5. save
     @Override
-    public RoleDTO save(RoleDTO roleDTO) {
-        Role role = roleMapper.map(roleDTO, Role.class);
+    public RoleDTO save(RoleDTO dto, Class<Role> clazz, Class<RoleDTO> dtoClazz) {
+        Role role = mapper.map(dto, Role.class);
         Role savedRole = roleRepository.save(role);
-        return roleMapper.map(savedRole, RoleDTO.class);
+        return mapper.map(savedRole, RoleDTO.class);
     }
 
-    // 6. update
     @Override
-    public RoleDTO update(@Valid RoleDTO roleDTO, String id) {
-        Optional<Role> curRoleOpt = roleRepository.findById(UUID.fromString(id));
-
-        if (curRoleOpt.isEmpty()) {
-            return null;
-        }
-
-        Role curRole = curRoleOpt.get();
-        if (!curRole.getCode().equals(roleDTO.getCode())) {
-            Optional<Role> existedRole = roleRepository.findByCode(roleDTO.getCode());
-            if (existedRole.isPresent()) {
-                return null;
-            }
-
-            curRole.setCode(roleDTO.getCode());
-        }
-
-        curRole.setDescription(roleDTO.getDescription());
-        Role role = roleRepository.save(curRole);
-        return roleMapper.map(role, RoleDTO.class);
-    }
-
-    // 7. delete
-    @Override
-    public void delete(String id) {
-        roleRepository.deleteById(UUID.fromString(id));
+    public RoleDTO update(RoleDTO dto, UUID id, Class<RoleDTO> dtoClazz) {
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new InventoryBusinessException("Role is not existed."));
+        role.setDescription(dto.getDescription());
+        return mapper.map(role, dtoClazz);
     }
 }

@@ -1,88 +1,90 @@
 package com.group.inventory.user.boundary;
 
 import com.group.inventory.common.util.ResponseHelper;
-import com.group.inventory.payload.response.MessageResponse;
-import com.group.inventory.user.dto.RequestUserDTO;
-import com.group.inventory.user.dto.UserDTO;
-import com.group.inventory.user.service.ImageService;
+import com.group.inventory.user.dto.UserDTORequest;
+import com.group.inventory.user.model.UserStatus;
 import com.group.inventory.user.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/v1/users")
 public class UserRestResource {
 
-    // 1. Attributes
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @Autowired
-    private ImageService imageService;
+    public UserRestResource(UserService userService) {
+        this.userService = userService;
+    }
 
-    // 2. FindAll
     @GetMapping
-    public Object getAllUser(HttpServletRequest request) {
-        return ResponseHelper.getResponse(userService.findAllUser(request, UserDTO.class), HttpStatus.OK);
+    public Object findAllUser(HttpServletRequest request) {
+        return ResponseHelper.getResponse(userService.findAllUser(request), HttpStatus.OK);
     }
 
     @GetMapping("/{user-id}")
-    public Object getUser(@PathVariable("user-id") String id, HttpServletRequest request) {
-        UserDTO userDTO = userService.findUserById(id, request);
-        if (userDTO == null) {
-            return ResponseHelper.getErrorResponse("User is not existed.", HttpStatus.BAD_REQUEST);
-        }
-        return ResponseHelper.getResponse(userDTO, HttpStatus.OK);
+    public Object findUserById(@PathVariable("user-id") UUID userId, HttpServletRequest request) {
+        return ResponseHelper.getResponse(userService.findUserById(userId, request), HttpStatus.OK);
     }
 
-    @PutMapping("/user-image/{user-id}")
-    public Object changeAvatar(@PathVariable("user-id") String id, @RequestParam("file") MultipartFile file) {
-        UserDTO userDTO = userService.updateAvatar(id, file);
-        if (userDTO == null) {
-            return ResponseHelper.getErrorResponse("User is not existed.", HttpStatus.BAD_REQUEST);
-        }
-        return ResponseHelper.getResponse(userDTO, HttpStatus.OK);
+    @GetMapping("/include-roles")
+    public Object findUserWithRoles(HttpServletRequest request) {
+        return ResponseHelper.getResponse(userService.findUserWithRoles(request), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/sign-up",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public Object signUp(@Valid @RequestBody RequestUserDTO requestUserDTO) {
-        MultipartFile file = requestUserDTO.getFile();
-        if (!file.isEmpty()) {
-            String filecode = imageService.save(file);
-            requestUserDTO.setAvatar(filecode);
-        }
-
-        userService.createNewUser(requestUserDTO);
-        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    @GetMapping("/{user-id}/include-roles")
+    public Object findUserWithRolesById(@PathVariable("user-id") UUID userId, HttpServletRequest request) {
+        return ResponseHelper.getResponse(userService.findUserWithRolesById(userId, request), HttpStatus.OK);
     }
 
-    // 3. Save
-    @PostMapping
-    public Object saveUserDTO(@RequestBody @Valid UserDTO userDTO) {
-        return ResponseHelper.getResponse(userService.save(userDTO), HttpStatus.CREATED);
+    @PostMapping(value = "/sign-up")
+    public Object signUp(@RequestBody @Valid UserDTORequest userDTORequest, HttpServletRequest request) {
+        return ResponseHelper.getResponse(userService.createNewUser(userDTORequest, request), HttpStatus.OK);
     }
 
-    // 4. Update
+    @PostMapping("{user-id}/add-roles")
+    public Object addRoles(
+            @PathVariable("user-id") UUID userId,
+            @RequestBody List<UUID> roleUuids,
+            HttpServletRequest request) {
+        return ResponseHelper.getResponse(userService.addRoles(userId, roleUuids, request), HttpStatus.OK);
+    }
+
+    @PostMapping("/{user-id}/remove-roles")
+    public Object removeRoles(
+            @PathVariable("user-id") UUID userId,
+            @RequestBody List<UUID> roleUuids,
+            HttpServletRequest request) {
+        return ResponseHelper.getResponse(userService.removeRoles(userId, roleUuids, request), HttpStatus.OK);
+    }
+
     @PutMapping("/{user-id}")
-    public Object updateUser(@PathVariable("user-id") String id, @Valid @RequestBody UserDTO userDTO) {
-        return ResponseHelper.getResponse(userService.update(id, userDTO), HttpStatus.OK);
+    public Object updateUser(
+            @PathVariable("user-id") UUID userId,
+            @RequestBody @Valid UserDTORequest userDTORequest,
+            HttpServletRequest request) {
+        return ResponseHelper.getResponse(userService.update(userId, userDTORequest, request), HttpStatus.OK);
     }
 
-    // 5. Delete
-    @DeleteMapping
-    public Object deleteUser(@RequestParam("id") String id) {
-        userService.delete(id);
-        return ResponseHelper.getResponse("User is deleted successfully", HttpStatus.OK);
+    @PutMapping("/{user-id}/user-image")
+    public Object changeAvatar(
+            @PathVariable("user-id") UUID userId,
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest request) {
+        return ResponseHelper.getResponse(userService.updateAvatar(userId, file, request), HttpStatus.OK);
     }
 
+    @PutMapping("/{user-id}/change-status")
+    public Object changeStatus(
+            @PathVariable("user-id") UUID userId,
+            @RequestParam("status") UserStatus userStatus,
+            HttpServletRequest request) {
+        return ResponseHelper.getResponse(userService.changeStatus(userId, userStatus, request), HttpStatus.OK);
+    }
 }
