@@ -7,23 +7,12 @@ public class UserEntity {
     @UtilityClass
     public class User {
         public static final String TABLE_NAME = "I_USER";
-
         public static final String NAME = "I_NAME";
         public static final String EMAIL = "I_EMAIL";
         public static final String PASSWORD = "I_PASSWORD";
-
-        public static final String USERNAME = "I_USERNAME";
-
-        public static final String DISPLAY_NAME = "I_DISPLAY_NAME";
-
-        public static final String FIRST_NAME = "I_FIRST_NAME";
-
-        public static final String LAST_NAME = "I_LAST_NAME";
-
         public static final String STATUS = "I_STATUS";
 
         public static final String DEPARTMENT = "I_DEPARTMENT";
-
         public static final String AVATAR = "I_AVATAR";
     }
 

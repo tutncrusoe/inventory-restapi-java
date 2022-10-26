@@ -17,7 +17,8 @@ public class ResponseHelper {
                         .hasError(false)
                         .errors(Collections.emptyList())
                         .timestamp(DateTimeUtils.now())
-                        .status(status.value()),
+                        .status(status.value())
+                        .build(),
                 status
         );
     }
@@ -30,7 +31,8 @@ public class ResponseHelper {
                         .hasError(true)
                         .errors(ErrorHelper.getAllError(errors))
                         .timestamp(DateTimeUtils.now())
-                        .status(status.value()),
+                        .status(status.value())
+                        .build(),
                 status);
     }
 
@@ -42,7 +44,8 @@ public class ResponseHelper {
                         .hasError(true)
                         .errors(List.of(errors))
                         .timestamp(DateTimeUtils.now())
-                        .status(status.value()),
+                        .status(status.value())
+                        .build(),
                 status);
     }
 
@@ -54,7 +57,8 @@ public class ResponseHelper {
                         .hasError(true)
                         .errors(errors)
                         .timestamp(DateTimeUtils.now())
-                        .status(status.value()),
+                        .status(status.value())
+                        .build(),
                 status);
     }
 }

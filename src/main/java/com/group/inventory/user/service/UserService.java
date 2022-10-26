@@ -1,15 +1,16 @@
 package com.group.inventory.user.service;
 
+import com.group.inventory.common.exception.InventoryBusinessException;
 import com.group.inventory.common.service.GenericService;
 import com.group.inventory.common.util.BaseMapper;
-import com.group.inventory.department.model.Department;
-import com.group.inventory.department.repository.DepartmentRepository;
 import com.group.inventory.role.dto.RoleDTO;
+import com.group.inventory.role.model.ERole;
 import com.group.inventory.role.model.Role;
 import com.group.inventory.role.repository.RoleRepository;
-import com.group.inventory.user.dto.RequestUserDTO;
-import com.group.inventory.user.dto.UserDTO;
+import com.group.inventory.role.service.RoleService;
+import com.group.inventory.user.dto.*;
 import com.group.inventory.user.model.User;
+import com.group.inventory.user.model.UserStatus;
 import com.group.inventory.user.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,54 +19,44 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public interface UserService extends GenericService<User, UserDTO, UUID> {
-    UserDTO createNewUser(RequestUserDTO dto);
+    UserWithRolesDTOResponse createNewUser(UserDTORequest userDTORequest, HttpServletRequest request);
 
-    List<UserDTO> findAllUser(HttpServletRequest request, Class<UserDTO> dtoClass);
+    //    -----------------------       GET       ----------------------
+    List<UserDTOResponse> findAllUser(HttpServletRequest request);
 
-    UserDTO findUserById(String id, HttpServletRequest request);
+    UserDTOResponse findUserById(UUID userId, HttpServletRequest request);
 
-    User findByEmail(String email);
+    List<UserWithRolesDTOResponse> findUserWithRoles(HttpServletRequest request);
 
-    List<RoleDTO> getRolesFromUser(UUID id);
+    UserWithRolesDTOResponse findUserWithRolesById(UUID userId, HttpServletRequest request);
 
-    UserDTO findUserWithRolesById(String id);
+    UserDTOResponse updateAvatar(UUID userId, MultipartFile file, HttpServletRequest request);
 
-    UserDTO updateAvatar(String id, MultipartFile file);
+    Set<RoleDTO> getRolesFromUser(UUID userId);
 
-    UserDTO addRole(String userId, String roleId);
+    //    -----------------------       POST       ----------------------
 
-    UserDTO removeRole(String userId, String roleId);
+    UserWithRolesDTOResponse addRoles(UUID userId, List<UUID> uuids, HttpServletRequest request);
 
-    UserDTO addDepartment(String userId, String departmentId);
+    UserWithRolesDTOResponse removeRoles(UUID userId, List<UUID> uuids, HttpServletRequest request);
 
-    UserDTO removeDepartment(String userId, String departmentId);
+    UserDTOResponse update(UUID userId, UserDTORequest userDTORequest, HttpServletRequest request);
 
-    UserDTO save(UserDTO userDTO);
-
-    UserDTO update(String id, UserDTO dto);
-
-    void delete(String id);
+    UserDTOResponse changeStatus(UUID userId, UserStatus userStatus, HttpServletRequest request);
 }
 
 @Service
 @Transactional
 class UserServiceImpl implements UserService {
 
-    // 1. Attributes
+    //    -----------------------       ATTRIBUTES       ----------------------
     private final UserRepository userRepository;
-
-    private final RoleRepository roleRepository;
-
-    private final DepartmentRepository departmentRepository;
 
     private final ImageService imageService;
 
@@ -73,21 +64,23 @@ class UserServiceImpl implements UserService {
 
     private final BaseMapper mapper;
 
-    // 2. Constructors
+    private final RoleService roleService;
+
+    //    -----------------------       CONSTRUCTOR       ----------------------
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
-                           DepartmentRepository departmentRepository,
                            ImageService imageService,
-                           PasswordEncoder encoder, BaseMapper mapper) {
+                           PasswordEncoder encoder,
+                           BaseMapper mapper,
+                           RoleService roleService) {
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.departmentRepository = departmentRepository;
         this.imageService = imageService;
         this.encoder = encoder;
         this.mapper = mapper;
+        this.roleService = roleService;
     }
 
-    // 3. Methods
+    //    -----------------------       METHOD       ----------------------
     @Override
     public JpaRepository<User, UUID> getRepository() {
         return this.userRepository;
@@ -99,221 +92,158 @@ class UserServiceImpl implements UserService {
         return this.mapper;
     }
 
+    //    -----------------------       GET       ----------------------
+
     @Override
     @Transactional(readOnly = true)
-    public List<UserDTO> findAllUser(HttpServletRequest request, Class<UserDTO> dtoClass) {
+    public List<UserDTOResponse> findAllUser(HttpServletRequest request) {
         List<User> users = userRepository.findAll();
         return users.stream()
-                .map(user -> {
-                            UserDTO userDTO;
-                            try {
-                                String imageUrl = imageService.generateImgUrl(user.getAvatar(), request);
-                                userDTO = mapper.map(user, dtoClass);
-                                userDTO.setAvatar(imageUrl);
-                            } catch (MalformedURLException e) {
-                                throw new RuntimeException(e);
-                            }
-                            ;
-                            return userDTO;
-                        }
-                )
+                .map(user -> createUserDTOResponse(user, request))
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserDTO findUserById(String id, HttpServletRequest request) {
-        Optional<User> userOpt = userRepository.findById(UUID.fromString(id));
-        if (userOpt.isEmpty()) {
-            return null;
-        }
-        return mapper.map(userOpt.get(), UserDTO.class);
+    public UserDTOResponse findUserById(UUID userId, HttpServletRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InventoryBusinessException("User is not existed."));
+
+        return createUserDTOResponse(user, request);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserDTO findUserWithRolesById(String id) {
-        Optional<User> userOpt = userRepository.findUserWithRolesById(UUID.fromString(id));
-        if (userOpt.isEmpty()) {
-            return null;
-        }
-        return mapper.map(userOpt.get(), UserDTO.class);
+    public List<UserWithRolesDTOResponse> findUserWithRoles(HttpServletRequest request) {
+        return userRepository.findUserWithRoles()
+                .stream()
+                .map(user -> createUserWithRolesDTOResponse(user, request))
+                .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public User findByEmail(String email) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            return null;
-        }
-        return userOpt.get();
+    public UserWithRolesDTOResponse findUserWithRolesById(UUID userId, HttpServletRequest request) {
+         User user = userRepository.findUserWithRolesById(userId)
+                 .orElseThrow(() -> new InventoryBusinessException("User is not existed."));
+
+        return createUserWithRolesDTOResponse(user, request);
     }
 
     @Override
-    public UserDTO createNewUser(RequestUserDTO dto) {
-        User user = mapper.map(dto, User.class);
+    public Set<RoleDTO> getRolesFromUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InventoryBusinessException("User is not existed."));
 
-        user.setPassword(encoder.encode(dto.getPassword()));
-
-        User newUser = userRepository.save(user);
-
-        newUser.setPassword("");
-
-        dto.getRoleIdList().forEach(roleId -> {
-            addRole(newUser.getId().toString(), roleId);
-        });
-
-        return addDepartment(newUser.getId().toString(), dto.getDepartmentId());
+        return mapper.map(user, UserWithRolesDTOResponse.class).getRoles();
     }
 
+
+    //    -----------------------       POST       ----------------------
     @Override
-    public UserDTO update(String id, UserDTO dto) {
-        User user = mapper.map(dto, User.class);
+    public UserWithRolesDTOResponse createNewUser(UserDTORequest userDTORequest, HttpServletRequest request) {
+        User user = mapper.map(userDTORequest, User.class);
 
-        Optional<User> curUserOpt = userRepository.findById(UUID.fromString(id));
-
-        if (curUserOpt.isEmpty()) {
-            return null;
-        }
-
-        User curUser = curUserOpt.get();
-
-        if (curUser.getId().equals(user.getId())) {
-            User newUser = userRepository.save(user);
-            return mapper.map(newUser, UserDTO.class);
-        }
-        return null;
-    }
-
-    public UserDTO updateAvatar(String id, MultipartFile file) {
-        Optional<User> userOpt = userRepository.findById(UUID.fromString(id));
-
-        if (userOpt.isEmpty()) {
-            return null;
-        }
-
-        User user = userOpt.get();
-
-        String imageCode = imageService.save(file);
-
-        user.setAvatar(imageCode);
-
-        User newUser = userRepository.save(user);
-
-        return mapper.map(newUser, UserDTO.class);
-    }
-
-    @Override
-    public UserDTO addRole(String userId, String roleId) {
-        Optional<User> userOpt;
-        Optional<Role> roleOpt;
-
-        try {
-            userOpt = userRepository.findById(UUID.fromString(userId));
-            roleOpt = roleRepository.findById(UUID.fromString(roleId));
-        } catch (EntityNotFoundException e) {
-            return null;
-        }
-
-        if (userOpt.isPresent() && roleOpt.isPresent()) {
-            User user = userOpt.get();
-            Role role = roleOpt.get();
-//            user.addRole(role);
-
-            User modifiedUser = userRepository.save(user);
-            return mapper.map(modifiedUser, UserDTO.class);
-        }
-
-        return null;
-    }
-
-    @Override
-    public UserDTO removeRole(String userId, String roleId) {
-        Optional<User> userOpt;
-        Optional<Role> roleOpt;
-
-        try {
-            userOpt = userRepository.findById(UUID.fromString(userId));
-            roleOpt = roleRepository.findById(UUID.fromString(roleId));
-        } catch (EntityNotFoundException e) {
-            return null;
-        }
-
-        if (userOpt.isPresent() && roleOpt.isPresent()) {
-            User user = userOpt.get();
-            Role role = roleOpt.get();
-//            user.removeRole(role);
-
-            User modifiedUser = userRepository.save(user);
-            return mapper.map(modifiedUser, UserDTO.class);
-        }
-
-        return null;
-    }
-
-    @Override
-    public UserDTO addDepartment(String userId, String departmentId) {
-        Optional<User> userOpt;
-        Optional<Department> departmentOpt;
-
-        try {
-            userOpt = userRepository.findById(UUID.fromString(userId));
-            departmentOpt = departmentRepository.findById(UUID.fromString(departmentId));
-        } catch (EntityNotFoundException e) {
-            return null;
-        }
-
-        if (userOpt.isPresent() && departmentOpt.isPresent()) {
-            User user = userOpt.get();
-            Department department = departmentOpt.get();
-//            user.addDepartment(department);
-
-            User modifiedUser = userRepository.save(user);
-            return mapper.map(modifiedUser, UserDTO.class);
-        }
-
-        return null;
-    }
-
-    @Override
-    public UserDTO removeDepartment(String userId, String departmentId) {
-        Optional<User> userOpt;
-        Optional<Department> departmentOpt;
-
-        try {
-            userOpt = userRepository.findById(UUID.fromString(userId));
-            departmentOpt = departmentRepository.findById(UUID.fromString(departmentId));
-        } catch (EntityNotFoundException e) {
-            return null;
-        }
-
-        if (userOpt.isPresent() && departmentOpt.isPresent()) {
-            User user = userOpt.get();
-            Department department = departmentOpt.get();
-//            user.removeDepartment(department);
-
-            User modifiedUser = userRepository.save(user);
-            return mapper.map(modifiedUser, UserDTO.class);
-        }
-
-        return null;
-    }
-
-    @Override
-    public UserDTO save(UserDTO userDTO) {
-        User user = mapper.map(userDTO, User.class);
+        user.setPassword(encoder.encode(userDTORequest.getPassword()));
+        
         User savedUser = userRepository.save(user);
-        return mapper.map(savedUser, UserDTO.class);
+
+        Role role = roleService.findByName(ERole.ROLE_USER);
+
+        savedUser.addRole(role);
+
+        return createUserWithRolesDTOResponse(savedUser, request);
     }
 
     @Override
-    public List<RoleDTO> getRolesFromUser(UUID uuid) {
-        return null;
+    public UserWithRolesDTOResponse addRoles(UUID userId, List<UUID> uuids, HttpServletRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InventoryBusinessException("User is not existed."));
+
+        List<Role> roles = roleService.findAllIds(uuids);
+
+        roles.forEach(user::addRole);
+
+        return createUserWithRolesDTOResponse(user, request);
     }
 
     @Override
-    public void delete(String id) {
-        userRepository.deleteById(UUID.fromString(id));
+    public UserWithRolesDTOResponse removeRoles(UUID userId, List<UUID> uuids, HttpServletRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InventoryBusinessException("User is not existed."));
+
+        List<Role> roles = roleService.findAllIds(uuids);
+
+        roles.forEach(user::removeRole);
+
+        return createUserWithRolesDTOResponse(user, request);
+    }
+
+    //    -----------------------       PUT       ----------------------
+    @Override
+    public UserDTOResponse update(UUID userId, UserDTORequest userDTORequest, HttpServletRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InventoryBusinessException("User is not existed."));
+
+        user.setUsername(userDTORequest.getUsername());
+        user.setStatus(userDTORequest.getStatus());
+        if (userDTORequest.getPassword() != null) {
+            user.setPassword(userDTORequest.getPassword());
+        }
+        return createUserDTOResponse(user, request);
+    }
+
+    public UserDTOResponse updateAvatar(UUID userId, MultipartFile file, HttpServletRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InventoryBusinessException("User is not existed."));
+
+        String avatarCode = imageService.save(file);
+        user.setAvatar(avatarCode);
+
+        return createUserDTOResponse(user, request);
+    }
+
+    @Override
+    public UserDTOResponse changeStatus(UUID userId, UserStatus userStatus, HttpServletRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InventoryBusinessException("User is not existed."));
+
+        user.setStatus(userStatus);
+
+        return createUserDTOResponse(user, request);
+    }
+
+    public UserDTOResponse createUserDTOResponse(User user, HttpServletRequest request) {
+        UserDTOResponse userDTOResponse;
+        String avatarCode = user.getAvatar();
+        try {
+            if (avatarCode != null) {
+                String imageUrl = imageService.generateImgUrl(user.getAvatar(), request);
+                userDTOResponse = getModelMapper().map(user, UserDTOResponse.class);
+                userDTOResponse.setAvatar(imageUrl);
+            } else {
+                userDTOResponse = getModelMapper().map(user, UserDTOResponse.class);
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        };
+        return userDTOResponse;
+    }
+
+    public UserWithRolesDTOResponse createUserWithRolesDTOResponse(User user, HttpServletRequest request) {
+        UserWithRolesDTOResponse userWithRolesDTOResponse;
+        String avatarCode = user.getAvatar();
+        try {
+            if (avatarCode != null) {
+                String imageUrl = imageService.generateImgUrl(user.getAvatar(), request);
+                userWithRolesDTOResponse = getModelMapper().map(user, UserWithRolesDTOResponse.class);
+                userWithRolesDTOResponse.setAvatar(imageUrl);
+            } else {
+                userWithRolesDTOResponse = getModelMapper().map(user, UserWithRolesDTOResponse.class);
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        };
+        return userWithRolesDTOResponse;
     }
 }

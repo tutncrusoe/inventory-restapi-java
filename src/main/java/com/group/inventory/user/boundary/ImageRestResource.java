@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/image")
+@RequestMapping("/api/v1/image")
 public class ImageRestResource {
 
     @Autowired
@@ -21,13 +21,13 @@ public class ImageRestResource {
     @PostMapping("/save")
     public Object uploadFile(
             @RequestParam("file") MultipartFile file) {
-        String filecode = imageService.save(file);
+        String fileCode = imageService.save(file);
 
         ImageDTO imageDTO = new ImageDTO();
         imageDTO.setFileName(file.getName());
         imageDTO.setSize(file.getSize());
-        imageDTO.setDownloadUri("/download/" + filecode);
-        imageDTO.setFileCode(filecode);
+        imageDTO.setDownloadUri("/download/" + fileCode);
+        imageDTO.setFileCode(fileCode);
 
         return ResponseHelper.getResponse(imageDTO, HttpStatus.OK);
     }

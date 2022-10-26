@@ -1,5 +1,6 @@
 package com.group.inventory.common.service;
 
+import com.group.inventory.common.exception.InventoryBusinessException;
 import com.group.inventory.common.model.BaseEntity;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
@@ -25,8 +26,15 @@ public interface GenericService<T extends BaseEntity, D, I> {
         return getRepository().findAllById(ids);
     }
 
-    default Optional<T> findById(I id) {
-        return getRepository().findById(id);
+    default T findById(I id) {
+        return getRepository().findById(id)
+                .orElseThrow(() -> new InventoryBusinessException("Id is not existed"));
+    }
+
+    default D findByIdDTO(I id, Class<D> clazz) {
+         T entity = getRepository().findById(id)
+                .orElseThrow(() -> new InventoryBusinessException("Id is not existed"));
+        return getModelMapper().map(entity, clazz);
     }
 
     default List<D> findAllDTO(Class<D> clazz) {
@@ -53,7 +61,8 @@ public interface GenericService<T extends BaseEntity, D, I> {
         getRepository().deleteById(id);
     }
 
-    default T update(T entity, I id) {
-        return getRepository().save(entity);
+    default D update(D dto, I id, Class<D> dtoClazz) {
+        T entity = getRepository().findById(id).orElseThrow(() -> new InventoryBusinessException("Id is not existed"));
+        return getModelMapper().map(entity, dtoClazz);
     }
 }

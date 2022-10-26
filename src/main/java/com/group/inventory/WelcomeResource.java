@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 public class WelcomeResource {
     @GetMapping
     public String welcome(HttpServletRequest request) {
-        String welcomeStr = "Welcome to %s to the Jira Application";
+        String welcomeStr = "Welcome to %s to the inventory_app";
         return String.format(welcomeStr, request.getRemoteAddr());
     }
 }

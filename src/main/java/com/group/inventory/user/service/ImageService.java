@@ -1,16 +1,14 @@
 package com.group.inventory.user.service;
 
+import com.group.inventory.common.exception.InventoryBusinessException;
 import com.group.inventory.common.util.MethodSup;
-import com.group.inventory.payload.response.MessageResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -44,7 +42,7 @@ class ImageServiceImpl implements ImageService {
                 Files.createDirectory(root);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Could not create repository " + e.getMessage());
+            throw new InventoryBusinessException("Could not create repository " + e.getMessage());
         }
     }
 
@@ -56,7 +54,7 @@ class ImageServiceImpl implements ImageService {
             Files.copy(file.getInputStream(), filePath);
             return fileCode;
         } catch (Exception e) {
-            throw new RuntimeException("Could not save file!");
+            throw new InventoryBusinessException("Could not save file!");
         }
     }
 
@@ -74,10 +72,10 @@ class ImageServiceImpl implements ImageService {
             if (resource.exists() || resource.isReadable()) {
                 return resource;
             } else {
-                throw new RuntimeException("Could not read the file!");
+                throw new InventoryBusinessException("Could not read the file!");
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error: " + e.getMessage());
+            throw new InventoryBusinessException("Error: " + e.getMessage());
         }
     }
 
@@ -94,12 +92,12 @@ class ImageServiceImpl implements ImageService {
                 }
             });
         } catch (NoSuchFileException e) {
-            throw new RuntimeException(
+            throw new InventoryBusinessException(
                     "No such file/directory exists");
         } catch (DirectoryNotEmptyException e) {
-            throw new RuntimeException("Directory is not empty.");
+            throw new InventoryBusinessException("Directory is not empty.");
         } catch (IOException e) {
-            throw new RuntimeException("Invalid permissions.");
+            throw new InventoryBusinessException("Invalid permissions.");
         }
     }
 

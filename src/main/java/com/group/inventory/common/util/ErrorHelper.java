@@ -5,6 +5,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import javax.servlet.ServletException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
@@ -46,6 +47,10 @@ public class ErrorHelper {
     }
 
     public static List<String> getError(RuntimeException exception) {
-        return List.of(DEFAULT_UNEXPECTED_MESSAGE);
+        return List.of(exception.getMessage());
+    }
+
+    public static List<String> getError(ServletException exception) {
+        return List.of(exception.getMessage());
     }
 }

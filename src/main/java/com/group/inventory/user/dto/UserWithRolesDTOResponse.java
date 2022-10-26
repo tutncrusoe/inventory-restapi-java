@@ -1,28 +1,31 @@
 package com.group.inventory.user.dto;
 
+import com.group.inventory.role.dto.RoleDTO;
 import com.group.inventory.user.model.UserStatus;
-import com.group.inventory.user.validation.annotation.UniqueEmail;
 import lombok.*;
 
+import java.util.Set;
 import java.util.UUID;
 
+/**
+ * A DTO for the {@link } entity
+ */
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
+public class UserWithRolesDTOResponse {
 
     private UUID id;
 
     private String username;
 
-    @UniqueEmail
     private String email;
-
-    private String password;
 
     private String avatar;
 
     private UserStatus status;
+
+    private Set<RoleDTO> roles;
 }
