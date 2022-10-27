@@ -24,13 +24,4 @@ public class UserEntity {
 
         public static final String ROLE_ID = "I_ROLE_ID";
     }
-
-    @UtilityClass
-    public class UserDepartment {
-        public static final String USER_DEPARTMENT_TABLE_NAME = "I_USER_DEPARTMENT";
-
-        public static final String USER_ID = "I_USER_ID";
-
-        public static final String DEPARTMENT_ID = "I_DEPARTMENT_ID";
-    }
 }

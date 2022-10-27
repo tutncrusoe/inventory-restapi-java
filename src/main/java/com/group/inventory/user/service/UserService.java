@@ -3,16 +3,21 @@ package com.group.inventory.user.service;
 import com.group.inventory.common.exception.InventoryBusinessException;
 import com.group.inventory.common.service.GenericService;
 import com.group.inventory.common.util.BaseMapper;
+import com.group.inventory.department.service.DepartmentService;
 import com.group.inventory.role.dto.RoleDTO;
 import com.group.inventory.role.model.ERole;
 import com.group.inventory.role.model.Role;
 import com.group.inventory.role.repository.RoleRepository;
 import com.group.inventory.role.service.RoleService;
-import com.group.inventory.user.dto.*;
+import com.group.inventory.user.dto.UserDTO;
+import com.group.inventory.user.dto.UserDTORequest;
+import com.group.inventory.user.dto.UserDTOResponse;
+import com.group.inventory.user.dto.UserWithRolesDTOResponse;
 import com.group.inventory.user.model.User;
 import com.group.inventory.user.model.UserStatus;
 import com.group.inventory.user.repository.UserRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,7 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public interface UserService extends GenericService<User, UserDTO, UUID> {
@@ -66,18 +73,22 @@ class UserServiceImpl implements UserService {
 
     private final RoleService roleService;
 
+    private final DepartmentService departmentService;
+
     //    -----------------------       CONSTRUCTOR       ----------------------
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            ImageService imageService,
                            PasswordEncoder encoder,
                            BaseMapper mapper,
-                           RoleService roleService) {
+                           RoleService roleService,
+                           @Lazy DepartmentService departmentService) {
         this.userRepository = userRepository;
         this.imageService = imageService;
         this.encoder = encoder;
         this.mapper = mapper;
         this.roleService = roleService;
+        this.departmentService = departmentService;
     }
 
     //    -----------------------       METHOD       ----------------------
@@ -124,8 +135,8 @@ class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserWithRolesDTOResponse findUserWithRolesById(UUID userId, HttpServletRequest request) {
-         User user = userRepository.findUserWithRolesById(userId)
-                 .orElseThrow(() -> new InventoryBusinessException("User is not existed."));
+        User user = userRepository.findUserWithRolesById(userId)
+                .orElseThrow(() -> new InventoryBusinessException("User is not existed."));
 
         return createUserWithRolesDTOResponse(user, request);
     }
@@ -145,8 +156,13 @@ class UserServiceImpl implements UserService {
         User user = mapper.map(userDTORequest, User.class);
 
         user.setPassword(encoder.encode(userDTORequest.getPassword()));
-        
+
         User savedUser = userRepository.save(user);
+
+        departmentService.addUsersToDepartment(
+                userDTORequest.getDepartmentId(),
+                List.of(savedUser.getId())
+        );
 
         Role role = roleService.findByName(ERole.ROLE_USER);
 
@@ -226,7 +242,8 @@ class UserServiceImpl implements UserService {
             }
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
-        };
+        }
+        ;
         return userDTOResponse;
     }
 
@@ -243,7 +260,8 @@ class UserServiceImpl implements UserService {
             }
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
-        };
+        }
+        ;
         return userWithRolesDTOResponse;
     }
 }
