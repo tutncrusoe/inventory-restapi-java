@@ -1,6 +1,8 @@
 package com.group.inventory.user.model;
 
 import com.group.inventory.common.model.BaseEntity;
+import com.group.inventory.department.model.Department;
+import com.group.inventory.department.model.DepartmentEntity;
 import com.group.inventory.role.model.Role;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,6 +51,10 @@ public class User extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "roles_id"))
     private Set<Role> roles = new LinkedHashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = DepartmentEntity.DepartmentMappedUser.DEPARTMENT_ID)
+    private Department department;
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -71,5 +77,4 @@ public class User extends BaseEntity {
         roles.remove(role);
         role.getUsers().remove(this);
     }
-
 }
