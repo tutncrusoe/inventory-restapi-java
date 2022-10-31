@@ -4,8 +4,8 @@
 		<Console name="STDOUT" target="SYSTEM_OUT">
 			<PatternLayout pattern="%style{%d{yyyy-MM-dd HH:mm:ss}}{black} %highlight{%-5level }[%style{%t{1.}}{bright,blue}] %style{%C{1.}}{bright,yellow}: %msg%n" disableAnsi="false" />
 		</Console>
-		<RollingFile name="RollingFile" fileName="./logs/gira-log.logs"
-			filePattern="./logs/$${date:dd-MM-yyyy}/gira-log-%d{dd-MM-yyyy}-%i.log"
+		<RollingFile name="RollingFile" fileName="./logs/inventory-log.logs"
+			filePattern="./logs/$${date:dd-MM-yyyy}/inventory-log-%d{dd-MM-yyyy}-%i.log.gz"
 		>
 			<PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level ${PID:- } --- %c{1.} - %m%n"/>
 			<Policies>
@@ -23,7 +23,7 @@
 			<AppenderRef ref="STDOUT" />
 			<AppenderRef ref="RollingFile" />
 		</Root>
-		<Logger level="debug" name="com.lam.jira">
+		<Logger level="debug" name="com.group.inventory">
 		</Logger>
 		<Logger level="info" name="org.springframework.boot">
 		</Logger>

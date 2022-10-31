@@ -33,11 +33,15 @@ spring:
       auth: true
       starttls.enable: true
       ssl.trust: smtp.gmail.com
+  cache:
+    type: redis
+    redis:
+      time-to-live: 40000
+      cache-null-values: true
 
-jira:
-  app:
-    jwtSecret: lamCustomSecretKeyForJiraAppABCDXYZBLABLABLA
-    jwtExpirationMs: 86400000
+redis:
+  host: localhost
+  port: 6379
 
 springdoc:
   swagger-ui:

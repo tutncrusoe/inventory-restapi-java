@@ -36,7 +36,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
         if (!(path.startsWith("/api/v1/auth/login")
                 || path.startsWith("/api/v1/users/sign-up")
-                || path.startsWith("/swagger-ui/index.html")
+                || path.startsWith("/swagger-ui/index.html/**")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/v3/api-docs/swagger-config"))) {
             if (jwtUtils.validateJwt(token)) {

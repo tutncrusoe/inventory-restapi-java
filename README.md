@@ -1,6 +1,10 @@
 # inventory
 
+To download and run redis server: docker run -p 6379:6379 -d redis
 
+Access to redis server container: 
+- docker exec -it {container-id} sh
+- redis-cli
 
 ## Getting started
 

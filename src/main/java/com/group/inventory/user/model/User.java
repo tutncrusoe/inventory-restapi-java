@@ -1,5 +1,6 @@
 package com.group.inventory.user.model;
 
+import com.group.inventory.action.model.Action;
 import com.group.inventory.common.model.BaseEntity;
 import com.group.inventory.department.model.Department;
 import com.group.inventory.department.model.DepartmentEntity;
@@ -54,6 +55,8 @@ public class User extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = DepartmentEntity.DepartmentMappedUser.DEPARTMENT_ID)
     private Department department;
+    @OneToOne(mappedBy = "user")
+    private Action action;
 
     @Override
     public boolean equals(Object obj) {
