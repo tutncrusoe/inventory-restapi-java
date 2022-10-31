@@ -23,6 +23,16 @@ spring:
     driver-class-name: org.mysql.Driver
   main:
     allow-circular-references: true
+  # QuocHao config email sender
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: quochao170402@gmail.com
+    password: zpzkaofyqzikymgf
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
+      ssl.trust: smtp.gmail.com
 
 jira:
   app:
@@ -37,3 +47,4 @@ springdoc:
 image:
   get:
     path: /api/v1/image
+
