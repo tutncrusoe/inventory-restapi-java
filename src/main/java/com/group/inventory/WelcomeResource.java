@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 
-@RestController
+@RestController("/hello")
 public class WelcomeResource {
     @GetMapping
     public String welcome(HttpServletRequest request) {

@@ -4,6 +4,7 @@ import com.group.inventory.common.util.ResponseHelper;
 import com.group.inventory.user.dto.UserDTORequest;
 import com.group.inventory.user.model.UserStatus;
 import com.group.inventory.user.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@Slf4j
 public class UserRestResource {
 
     private final UserService userService;
@@ -35,6 +37,7 @@ public class UserRestResource {
 
     @GetMapping("/include-roles")
     public Object findUserWithRoles(HttpServletRequest request) {
+        log.info("UserRestResource: findUserWithRoles");
         return ResponseHelper.getResponse(userService.findUserWithRoles(request), HttpStatus.OK);
     }
 

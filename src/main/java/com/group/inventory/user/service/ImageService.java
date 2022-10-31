@@ -105,4 +105,5 @@ class ImageServiceImpl implements ImageService {
     public String generateImgUrl(String imageCode, HttpServletRequest request) throws MalformedURLException {
         return MethodSup.getURLBase(request) + originImagePath + "/" + imageCode;
     }
+
 }

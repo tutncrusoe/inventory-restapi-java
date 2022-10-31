@@ -5,9 +5,9 @@ import com.group.inventory.common.model.BaseEntity;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public interface GenericService<T extends BaseEntity, D, I> {
@@ -37,6 +37,7 @@ public interface GenericService<T extends BaseEntity, D, I> {
         return getModelMapper().map(entity, clazz);
     }
 
+    @Transactional(readOnly = true)
     default List<D> findAllDTO(Class<D> clazz) {
         return getRepository().findAll()
                 .stream()
@@ -44,6 +45,7 @@ public interface GenericService<T extends BaseEntity, D, I> {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     default List<D> findAllDTO(Pageable pageable, Class<D> clazz) {
         return getRepository().findAll(pageable)
                 .stream()
