@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group.inventory.action.model.Action;
 import com.group.inventory.action.model.EActionStatus;
 import com.group.inventory.common.model.BaseEntity;
+import com.group.inventory.storage.model.Storage;
+import com.group.inventory.storage.model.StorageEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -43,6 +45,9 @@ public class PartDetails extends BaseEntity {
     @Column(name = PartEntity.PartDetails.PART_QUANTITY)
     private long quantity;
 
+    @Column(name = PartEntity.PartDetails.PART_VOLUME)
+    private float volume;
+
     @Column(name = PartEntity.PartStatus.NAME, nullable = false)
     @Enumerated(EnumType.STRING)
     private EPartStatus partStatus;
@@ -59,6 +64,11 @@ public class PartDetails extends BaseEntity {
     @JoinColumn(name = PartEntity.PartDetails.PART_SESSION_ID)
     @JsonIgnore
     private PartSession partSession;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = StorageEntity.StorageMappedPartDetail.JOIN_COLUMN)
+    @JsonIgnore
+    private Storage storage;
 
     public void addAction(Action action) {
         this.action.add(action);

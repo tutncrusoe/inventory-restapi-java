@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/v1/part-session")
+    @RequestMapping("api/v1/part-session")
 public class PartSessionRestResource {
     private final PartSessionService partSessionService;
 
