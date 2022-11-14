@@ -33,6 +33,7 @@ public class PartEntity {
         public static final String PART_NUMBER= "I_PART_NUMBER";
         public static final String PART_IS_SPECIAL= "I_PART_IS_SPECIAL";
         public static final String PART_QUANTITY= "I_PART_QUANTITY";
+        public static final String PART_VOLUME= "I_PART_VOLUME";
 
         public static final String PART_SESSION_ID= "I_PART_SESSION_ID";
 

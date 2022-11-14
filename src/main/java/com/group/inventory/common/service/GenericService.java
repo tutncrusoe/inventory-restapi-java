@@ -1,8 +1,12 @@
 package com.group.inventory.common.service;
 
+import com.group.inventory.common.dto.PagingRequestDTO;
+import com.group.inventory.common.dto.PagingResponseDTO;
 import com.group.inventory.common.exception.InventoryBusinessException;
 import com.group.inventory.common.model.BaseEntity;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +16,7 @@ import java.util.stream.Collectors;
 
 public interface GenericService<T extends BaseEntity, D, I> {
     JpaRepository<T, I> getRepository(); // Factory method
+
     ModelMapper getModelMapper();
 
     default List<T> findAll() {
@@ -32,7 +37,7 @@ public interface GenericService<T extends BaseEntity, D, I> {
     }
 
     default D findByIdDTO(I id, Class<D> clazz) {
-         T entity = getRepository().findById(id)
+        T entity = getRepository().findById(id)
                 .orElseThrow(() -> new InventoryBusinessException("Id is not existed"));
         return getModelMapper().map(entity, clazz);
     }
@@ -67,4 +72,17 @@ public interface GenericService<T extends BaseEntity, D, I> {
         T entity = getRepository().findById(id).orElseThrow(() -> new InventoryBusinessException("Id is not existed"));
         return getModelMapper().map(entity, dtoClazz);
     }
+
+    default PagingResponseDTO findAll(PagingRequestDTO request, Class<D> dtoClass) {
+        Page<D> page = getRepository().findAll(PageRequest.of(request.getIndex(), request.getSize()))
+                .map(value -> getModelMapper().map(value, dtoClass));
+
+        return PagingResponseDTO.builder()
+                .content(page.getContent())
+                .index(page.getNumber())
+                .size(page.getSize())
+                .totalPage(page.getTotalPages())
+                .build();
+    }
+
 }

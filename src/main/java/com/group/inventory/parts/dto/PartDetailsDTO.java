@@ -1,6 +1,5 @@
 package com.group.inventory.parts.dto;
 
-import com.group.inventory.action.model.Action;
 import com.group.inventory.action.model.EActionStatus;
 import com.group.inventory.parts.model.EPartStatus;
 import com.group.inventory.parts.validation.annotation.UniqueSeriNumberPartDetails;
@@ -10,7 +9,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
-import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -36,6 +34,8 @@ public class PartDetailsDTO implements Serializable {
     private boolean isSpecial = false;
 
     private long quantity;
+
+    private float volume;
 
     @Enumerated(EnumType.STRING)
     private EPartStatus partStatus;
