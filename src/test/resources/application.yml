@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/test
+    username: root
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+      globally_quoted_identifiers: true
+    generate-ddl: true
+    show-sql: false
+  flyway:
+    enabled: false
+    driver-class-name: org.mysql.Driver
+  cache:
+    type: none
+#  security:
+#    basic:
+#      enabled: false
+
+redis:
+  host: localhost
+  port: 6379
+
+image:
+  get:
+    path: /api/v1/image
