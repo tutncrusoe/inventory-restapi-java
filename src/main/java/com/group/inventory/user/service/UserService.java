@@ -7,7 +7,6 @@ import com.group.inventory.department.service.DepartmentService;
 import com.group.inventory.role.dto.RoleDTO;
 import com.group.inventory.role.model.ERole;
 import com.group.inventory.role.model.Role;
-import com.group.inventory.role.repository.RoleRepository;
 import com.group.inventory.role.service.RoleService;
 import com.group.inventory.user.dto.UserDTO;
 import com.group.inventory.user.dto.UserDTORequest;
@@ -77,7 +76,6 @@ class UserServiceImpl implements UserService {
 
     //    -----------------------       CONSTRUCTOR       ----------------------
     public UserServiceImpl(UserRepository userRepository,
-                           RoleRepository roleRepository,
                            ImageService imageService,
                            PasswordEncoder encoder,
                            BaseMapper mapper,
@@ -108,7 +106,9 @@ class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserDTOResponse> findAllUser(HttpServletRequest request) {
+
         List<User> users = userRepository.findAll();
+
         return users.stream()
                 .map(user -> createUserDTOResponse(user, request))
                 .collect(Collectors.toList());
@@ -126,6 +126,7 @@ class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserWithRolesDTOResponse> findUserWithRoles(HttpServletRequest request) {
+
         return userRepository.findUserWithRoles()
                 .stream()
                 .map(user -> createUserWithRolesDTOResponse(user, request))

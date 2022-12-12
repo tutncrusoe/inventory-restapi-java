@@ -1,9 +1,9 @@
 package com.group.inventory.role.boundary;
 
+import com.group.inventory.common.util.ResponseHelper;
 import com.group.inventory.role.dto.RoleDTO;
 import com.group.inventory.role.model.Role;
 import com.group.inventory.role.service.RoleService;
-import com.group.inventory.common.util.ResponseHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
